@@ -1,0 +1,32 @@
+
+<h1>sup</h1>
+<input type="text">
+</br>
+<button id="check">check if position is database</button>
+</br>
+
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script>
+  console.log("Test");
+<%for row in 0 ..@his.length-1 %>
+  $("h1").append("<%=@his[row].move_history%>");
+  // </br>
+<%end%>
+
+$("#check").click(function(){
+  var currentPos = $("input").val();
+
+  <%for row in 0 ..@his.length-1 %>
+ if ("<%=@his[row].move_history%>" === currentPos)
+ {
+    console.log("The last move played is ","<%=@his[row].last_move%>")
+ }
+  // </br>
+<%end%>
+
+  console.log(currentPos);
+});
+</script>

@@ -1,0 +1,419 @@
+<html>
+    <head>
+
+    </head>
+    <body>
+        <h1>Play some tic tac toe!</h1>
+        <html>
+    <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    </head>
+
+    <body>
+        <input type="text" id="get-moves">Put your text here</input>
+        <button id="make-board">Make board</button>
+        <button id="compare-positions">Get your comparison on player</button>
+        <div class="container">
+            <div class="first-three">
+                <span class="one tic-tac-toe" data-number="1" data-row="0" data-column="0">1</span>
+                <span class="two tic-tac-toe" data-number="2" data-row="0" data-column="1">2</span>
+                <span class="three tic-tac-toe" data-number="3" data-row="0" data-column="2">3</span>
+            </div>
+            <div class="second-three">
+                <span class="four tic-tac-toe" data-number="4" data-row="1" data-column="0">4</span>
+                <span class="five tic-tac-toe" data-number="5" data-row="1" data-column="1">5</span>
+                <span class="six tic-tac-toe" data-number="6" data-row="1" data-column="2">6</span>
+            </div>
+            <div class="third-three">
+                <span class="seven tic-tac-toe" data-number="7" data-row="2" data-column="0">7</span>
+                <span class="eight tic-tac-toe" data-number="8" data-row="2" data-column="1">8</span>
+                <span class="nine tic-tac-toe" data-number="9" data-row="2" data-column="2">9</span>
+            </div>
+        </div>
+        <div class="player-container">
+            <span class="player1 player">Player1</span>
+            <span class="player2 player">Player2</span>
+        </div>
+        <div class="winner" ></div>
+
+    </body>
+        <script>
+            var finalBoardState = "";
+
+            var ticTacArray = [0,0,0,0,0,0,0,0,0];
+            var ticTacToeMatrix = [['-','-','-'],
+                           ['-','-','-'],
+                           ['-','-','-']];
+            var playersTurn = "player1";
+            var gameOver = false;
+            findCorrespondingElement = function (col,row)
+            {
+                var returny;
+                var rowArray = $("*[data-row]");
+                rowArray.each(function(index,element){
+                    var newArray = $(element);
+                    if (newArray.data("row") === row && newArray.data("column") === col)
+                    {
+                        returny = newArray;
+                    }
+                });
+                return returny;
+            }
+            function howManyPlys(matrix)
+            {
+                var howMany = 0;
+                 matrix.forEach(function(subMatrix){
+                     subMatrix.forEach(function(move){
+                        if (move === "X" || (move === "O"))
+                        {
+                            howMany ++;
+                        }
+                    });
+                 });
+                return howMany;
+            }
+            var currentMove;
+            $(function() {
+                console.log("test");
+
+                $("#make-board").click(function(){
+                    var input = $("#get-moves").val();
+
+                    ticTacToeMatrix.forEach(function(col,cIndex){
+                        col.forEach(function(square,sIndex){
+                            ticTacToeMatrix[cIndex][sIndex] = input[sIndex + 3 *cIndex];
+                        });
+                    });
+                    makeBoardFromMatrix(ticTacToeMatrix);
+                });
+
+                $("#compare-positions").click(function(){
+
+                    var input = $("#get-moves").val();
+                    newMatrix = [[null,null,null],[null,null,null],[null,null,null]];
+                    newMatrix.forEach(function(col,cIndex){
+                        col.forEach(function(square,sIndex){
+                            newMatrix[cIndex][sIndex] = input[sIndex + 3 *cIndex];
+                        });
+                    });
+
+
+                    console.log(areTheseTwoPositionsEqual(ticTacToeMatrix,newMatrix));
+                });
+                function makeBoardFromMatrix(matrix)
+                {
+                    newMatrix = [[],[],[]];
+                    matrix.forEach(function(col,cIndex){
+                        col.forEach(function(square,sIndex){
+                            newMatrix[cIndex][sIndex] = square;
+                            if (square !== '-')
+                            {
+                                updateBoard(cIndex,sIndex,"green",square);
+                            }
+                        });
+                    });
+                    return newMatrix;
+                }
+
+                var playAgainstComputer = prompt("Play against the Computer?");
+                if (playAgainstComputer === "yes")
+                {
+                    $(".player").hide();
+                }
+                $(".tic-tac-toe").click(function()
+                {
+                    if ($(this).text()!=="X" && $(this).text()!=="O" && gameOver === false)
+                    {
+                        var row = $(this).data("row");
+                        var col = $(this).data("column");
+                        var color;
+
+                        underlinePlayer(playersTurn);
+
+                        if (playersTurn === "player1")
+                        {
+                            var playersChoice = 'X';
+                            color = "red";
+                            playersTurn = "player2";
+                        }
+                        else if (playersTurn === "player2")
+                        {
+                            if (playAgainstComputer === "no")
+                            {
+                                var playersChoice = 'O';
+                                color = "blue";
+                                playersTurn = "player1";
+                            }
+                        }
+                        updateBoard(col,row,color,playersChoice);
+                        ticTacToeMatrix[col][row] = playersChoice;
+                        isCatsGame(ticTacToeMatrix);
+                        if(playAgainstComputer === 'yes')
+                        {
+                            playersTurn = "player1";
+                            ai();
+                        }
+
+                    }
+                });
+                function ai()
+                {
+                    templateArray = copyMatrix(ticTacToeMatrix);
+                    function copyMatrix(original)
+                    {
+                        var dummyA = [];
+                        original.forEach(function(row,rIndex){
+                            dummyA.push([]);
+                            row.forEach(function(square,sIndex){
+                                dummyA[rIndex][sIndex] = square;
+                            });
+                        });
+                        return dummyA;
+                    }
+
+                    //look up final positions in database
+                    if (gameOver === false)
+                    {
+                        var stopHere = false;
+                        ticTacToeMatrix.forEach(function(row,rIndex){
+                            row.forEach(function(square,sIndex){
+                                if (stopHere === false)
+                                {
+                                    var tempArray = copyMatrix(templateArray);
+                                    // tempArray[rIndex][sIndex] = 'O';
+                                    var dummyFinalState = finalState(null,null,tempArray);
+                                    if (square === '-')
+                                    {
+                                        var badMoveArray = isInDataBase(dummyFinalState);
+                                        var beenPlayedBefore = false;
+                                        if (badMoveArray.length > 0)
+                                        {
+                                            badMoveArray.forEach(function(badMove){
+                                                console.log("Bad move is ",badMove);
+
+                                                if (badMove === findCorrespondingElement(rIndex,sIndex).data("number"))
+                                                {
+                                                    beenPlayedBefore = true;
+                                                }
+                                            });
+                                            if (!beenPlayedBefore)
+                                            {
+                                                var currentSquare = findCorrespondingElement(rIndex,sIndex).data("number");
+                                                console.log("Move we went with is ",currentSquare,"had this been played before ",beenPlayedBefore);
+                                                ticTacToeMatrix[rIndex][sIndex] = 'O';
+                                                updateBoard(rIndex,sIndex,'blue','O');
+                                                stopHere = true;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            ticTacToeMatrix[rIndex][sIndex] = 'O';
+                                            updateBoard(rIndex,sIndex,'blue','O');
+                                            stopHere = true;
+                                        }
+                                    }
+                                }
+                            });
+                        });
+                    }
+                }
+                function isInDataBase(candidateMove)
+                {
+                    console.log("candidateMove is ",candidateMove);
+                    var badMoveArray = [];
+                    <%for row in 0 ..@his.length-1 %>
+                        if ("<%=@his[row].move_history%>" === candidateMove)
+                        {
+                            // console.log("The last move played is ","<%=@his[row].last_move%>")
+                            badMoveArray.push(<%=@his[row].last_move %>);
+                        }
+                    <%end%>
+                    return badMoveArray;
+                }
+
+                function areTheseTwoPositionsEqual(matrix1,matrix2)
+                {
+                    function matrixToString(matrix)
+                    {
+                        var stringy = "";
+                        matrix.forEach(function(array,index)
+                        {
+                            stringy += array.toString();
+                        });
+
+                        return stringy
+                    }
+                    string1 = matrixToString(matrix1);
+                    string2 = matrixToString(matrix2);
+                    return string1 === string2;
+                }
+                function underlinePlayer(player)
+                {
+                    if (player === 'player1')
+                    {
+                        $(".player2").css("text-decoration","underline");
+                        $(".player2").css("color","blue");
+                        $(".player1").css("text-decoration","none");
+                    }
+                    else if(player === 'player2')
+                    {
+                        $(".player1").css("text-decoration","underline");
+                        $(".player1").css("color","red");
+                        $(".player2").css("text-decoration","none");
+                    }
+                }
+
+                function gameFinished(player)
+                {
+                    gameOver = true;
+                    var color = {"1" : "red","2": "blue"};
+                    $(".player").css("visibility","hidden");
+                    $(".winner").css("color", color[player]);
+                    if (player === 2 && playAgainstComputer === 'yes')
+                    {
+                        $(".winner").text("The computer is the winner!!");
+                    }
+                    else
+                    {
+                        $(".winner").text("Player " + player + " is the winner!!");
+                    }
+                    alert(finalBoardState);
+                    location.href = "http://localhost:3000/test/" + finalBoardState + currentMove;
+                }
+                function checkIfThreeInARow()
+                {
+                    checkVerticalThree();
+                    checkHorizontalThree();
+                    checkDiagonalThree();
+
+                    function checkVerticalThree()
+                    {
+                        ticTacToeMatrix.forEach(function(value,index){
+                            checkColumn(index);
+                        });
+
+                        function checkColumn(index)
+                        {
+                            function testIfTrue(playerMove)
+                            {
+                                return (playerMove === ticTacToeMatrix[index][0] && playerMove === ticTacToeMatrix[index][1] && playerMove === ticTacToeMatrix[index][2]);
+                            }
+                            if (testIfTrue('X') || testIfTrue('O'))
+                            {
+                                if (ticTacToeMatrix[index][0] === 'X')
+                                {
+                                    gameFinished(1);
+                                }
+                                else if(ticTacToeMatrix[index][0] === 'O')
+                                {
+                                    gameFinished(2);
+                                }
+                            }
+                        }
+                    }
+                    function checkHorizontalThree()
+                    {
+                        ticTacToeMatrix[0].forEach(function(value,index){
+                            checkRow(index);
+                        })
+                        function checkRow(index)
+                        {
+                            function testIfTrue(playerMove)
+                            {
+                                return (playerMove === ticTacToeMatrix[0][index] && playerMove === ticTacToeMatrix[1][index] && playerMove === ticTacToeMatrix[2][index])
+                            }
+                            if (testIfTrue('X'))
+                            {
+                                gameFinished(1);
+                            }
+                            else if (testIfTrue('O'))
+                            {
+                                gameFinished(2);
+                            }
+                        }
+                    }
+                    function checkDiagonalThree()
+                    {
+                        checkDiagonal1();
+                        checkDiagonal2();
+
+                        function checkDiagonal1()
+                        {
+                            function testIfTrue(playerMove)
+                            {
+                                return (playerMove === ticTacToeMatrix[0][0] && playerMove === ticTacToeMatrix[1][1] && playerMove === ticTacToeMatrix[2][2])
+                            }
+                            if(testIfTrue('X'))
+                            {
+                                gameFinished(1);
+                            }
+                            else if (testIfTrue('O'))
+                            {
+                                gameFinished(2);
+                            }
+                        }
+                        function checkDiagonal2()
+                        {
+                            function testIfTrue(playerMove)
+                            {
+                                return (playerMove === ticTacToeMatrix[2][0] && playerMove === ticTacToeMatrix[1][1] && playerMove === ticTacToeMatrix[0][2])
+                            }
+                            if(testIfTrue('X'))
+                            {
+                                gameFinished(1);
+                            }
+                            else if (testIfTrue('O'))
+                            {
+                                gameFinished(2);
+                            }
+                        }
+                    }
+                }
+                function finalState(col,row,matrix)
+                {
+                    var finalBoardState = "";
+                    matrix.forEach(function(col1,rIndex){
+                        col1.forEach(function(square,sIndex){
+                            if (col === rIndex && row === sIndex)
+                            {
+                                finalBoardState += '-';
+                            }
+                            else
+                            {
+                                finalBoardState += square;
+                            }
+                        });
+                    });
+                    return finalBoardState
+                }
+                function updateBoard(col,row,color,playersChoice)
+                {
+                    if (playersChoice === 'O')
+                    {
+                        finalBoardState = "";
+                        finalBoardState = finalState(col,row,ticTacToeMatrix);
+                    }
+
+                    thiss = findCorrespondingElement(col,row);
+                    ticTacToeMatrix[col][row] = playersChoice;
+                    $(thiss).text(playersChoice);
+                    $(thiss).css("color",color);
+                    checkIfThreeInARow();
+                    if(playersChoice ==='O')
+                    {
+                       currentMove = thiss.data("number");
+                    }
+                }
+
+                function isCatsGame(matrix)
+                {
+                    if (howManyPlys(matrix) === 9 && gameOver === false)
+                    {
+                        $(".winner").text("There is no winner");
+                        $(".player").css("visibility","hidden");
+                    }
+                }
+            });
+            </script>
+        </body>
+
