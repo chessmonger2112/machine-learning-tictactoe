@@ -10,11 +10,6 @@
     </head>
 
     <body>
-        <form id="form"  method="post" action="/previous" >
-            <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
-            <input id="send" type="text" name="previous">
-            <input type="submit">
-        </form>
         <input type="text" id="get-moves">Put your text here</input>
         <button id="make-board">Make board</button>
         <button id="compare-positions">Get your comparison on player</button>
@@ -267,17 +262,20 @@
                     var color = {"1" : "red","2": "blue"};
                     $(".player").css("visibility","hidden");
                     $(".winner").css("color", color[player]);
+                    var computerLost;
                     if (player === 2 && playAgainstComputer === 'yes')
                     {
                         $(".winner").text("The computer is the winner!!");
+                        computerLost = false;
                     }
                     else
                     {
                         $(".winner").text("Player " + player + " is the winner!!");
+                        computerLost = true;
                     }
 
                     compareDBToLegalMoves();
-                    if (!previousMovesBeingAdded)
+                    if (!previousMovesBeingAdded && computerLost)
                     {
                         location.href = "http://localhost:3000/test/" + finalBoardState + currentMove;
                     }
@@ -341,22 +339,13 @@
                                 var modFinalBState = modifyString(boardState,i,"-");
                                 // twoPlyBehind.push({move_history: modFinalBState,last_move: i});
                                 twoPlyBehind.push(modFinalBState,i + 1);
-
-                                //ajax call post methods with all the board states and last moves
                                 previousMovesBeingAdded = true;
-                                // $("#send").val(twoPlyBehind)
-                                // $("#form").submit();
-
                             }
                         }
                     });
-                    twoPlyBehind.forEach(function(boardState,index){
-                        // alert("O board state is " + boardState[index].last_move);
-                    });
-                    // $.ajax({url:"/previous",data: {positions:[{a:"b"},{b:"c"}]},method:"post"});
                     $.ajax({url:"/previous", data: {positions:twoPlyBehind},method:"post",datatype:"json"});
-
-                }
+                    console.log("final board state ",finalBoardState);
+                    $.ajax({url:"/lostposition/" + finalBoardState,method:"delete",datatype:"json"});                }
                 function modifyString(originalString,index,newLetter)
                 {
                     var newString = "";
@@ -510,4 +499,3 @@
             });
             </script>
         </body>
-

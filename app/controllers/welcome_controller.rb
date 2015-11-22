@@ -4,10 +4,15 @@ class WelcomeController < ApplicationController
       @hiss = History.new
     end
 
+    def del
+      lost_position = params[:position]
+      # lost_position = "QQQQQQQQQ"
+      lost_array = History.where(move_history: lost_position)
+      lost_array.delete_all
+    end
 
   def prev
     position_array = params[:positions]
-
     # for index in 0..position_array.length-1
     (0..position_array.length-1).step(2) do |index|
       @his = History.new
@@ -17,8 +22,6 @@ class WelcomeController < ApplicationController
       @his.last_move = odd_element
       @his.save
     end
-
-    "sup"
   end
 
     def newtest

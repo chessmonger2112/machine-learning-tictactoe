@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   get '/test/:gamehistory' => 'welcome#newtest'
   get '/displayall' => 'welcome#show_database'
   post '/previous' => 'welcome#prev'
+  delete '/lostposition/:position' => 'welcome#del'
 
   # Example of regular route:
   #   get 'products/:id' => 'catalog#view'
