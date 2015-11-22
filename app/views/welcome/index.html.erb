@@ -10,6 +10,11 @@
     </head>
 
     <body>
+        <form id="form"  method="post" action="/previous" >
+            <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+            <input id="send" type="text" name="previous">
+            <input type="submit">
+        </form>
         <input type="text" id="get-moves">Put your text here</input>
         <button id="make-board">Make board</button>
         <button id="compare-positions">Get your comparison on player</button>
@@ -46,6 +51,7 @@
                            ['-','-','-']];
             var playersTurn = "player1";
             var gameOver = false;
+            var previousMovesBeingAdded = false;
             findCorrespondingElement = function (col,row)
             {
                 var returny;
@@ -96,8 +102,6 @@
                             newMatrix[cIndex][sIndex] = input[sIndex + 3 *cIndex];
                         });
                     });
-
-
                     console.log(areTheseTwoPositionsEqual(ticTacToeMatrix,newMatrix));
                 });
                 function makeBoardFromMatrix(matrix)
@@ -153,7 +157,6 @@
                             playersTurn = "player1";
                             ai();
                         }
-
                     }
                 });
                 function ai()
@@ -180,7 +183,6 @@
                                 if (stopHere === false)
                                 {
                                     var tempArray = copyMatrix(templateArray);
-                                    // tempArray[rIndex][sIndex] = 'O';
                                     var dummyFinalState = finalState(null,null,tempArray);
                                     if (square === '-')
                                     {
@@ -189,8 +191,6 @@
                                         if (badMoveArray.length > 0)
                                         {
                                             badMoveArray.forEach(function(badMove){
-                                                console.log("Bad move is ",badMove);
-
                                                 if (badMove === findCorrespondingElement(rIndex,sIndex).data("number"))
                                                 {
                                                     beenPlayedBefore = true;
@@ -199,7 +199,6 @@
                                             if (!beenPlayedBefore)
                                             {
                                                 var currentSquare = findCorrespondingElement(rIndex,sIndex).data("number");
-                                                console.log("Move we went with is ",currentSquare,"had this been played before ",beenPlayedBefore);
                                                 ticTacToeMatrix[rIndex][sIndex] = 'O';
                                                 updateBoard(rIndex,sIndex,'blue','O');
                                                 stopHere = true;
@@ -219,7 +218,6 @@
                 }
                 function isInDataBase(candidateMove)
                 {
-                    console.log("candidateMove is ",candidateMove);
                     var badMoveArray = [];
                     <%for row in 0 ..@his.length-1 %>
                         if ("<%=@his[row].move_history%>" === candidateMove)
@@ -277,8 +275,104 @@
                     {
                         $(".winner").text("Player " + player + " is the winner!!");
                     }
-                    alert(finalBoardState);
-                    location.href = "http://localhost:3000/test/" + finalBoardState + currentMove;
+
+                    compareDBToLegalMoves();
+                    if (!previousMovesBeingAdded)
+                    {
+                        location.href = "http://localhost:3000/test/" + finalBoardState + currentMove;
+                    }
+                }
+                function compareDBToLegalMoves()
+                {
+                    var numOfSamePos = 0;
+                    <% for index in 0 .. @his.length-1 %>
+                        if (finalBoardState === "<%=@his[index].move_history%>")
+                        {
+                            numOfSamePos ++;
+                        }
+                    <%end %>
+                    var numOfLegalMoves = 0;
+                    var numOfX = 0;
+                    var numOfO = 0;
+                    for (var i = 0; i < finalBoardState.length; i ++)
+                    {
+                        var letter = finalBoardState[i];
+                        if (letter === '-')
+                        {
+                            numOfLegalMoves ++;
+                        }
+                        else if (letter === 'O')
+                        {
+                            numOfO ++;
+                        }
+                        else if (letter === 'X')
+                        {
+                            numOfX ++;
+                        }
+                    }
+                    if (numOfLegalMoves -1 === numOfSamePos)
+                    {
+                        alert(numOfSamePos + " positions have the same position in the database");
+                        createPreviousPositions();
+                    }
+                }
+                function createPreviousPositions (numOfX,numOfO)
+                {
+                    var onePlyBehind = [];
+                    for (var i = 0; i < finalBoardState.length; i ++)
+                    {
+                        var letter = finalBoardState[i];
+                        if (letter === 'X')
+                        {
+                            var modFinalBState = modifyString(finalBoardState,i,"-");
+                            onePlyBehind.push(modFinalBState);
+                        }
+                    }
+                    // onePlyBehind.forEach(function(boardState){
+                    //     alert("X board state is " + boardState);
+                    // });
+                    twoPlyBehind = [];
+                    onePlyBehind.forEach(function(boardState){
+                        for (var i = 0; i < boardState.length; i ++)
+                        {
+                            var letter = boardState[i];
+                            if (letter === 'O')
+                            {
+                                var modFinalBState = modifyString(boardState,i,"-");
+                                // twoPlyBehind.push({move_history: modFinalBState,last_move: i});
+                                twoPlyBehind.push(modFinalBState,i + 1);
+
+                                //ajax call post methods with all the board states and last moves
+                                previousMovesBeingAdded = true;
+                                // $("#send").val(twoPlyBehind)
+                                // $("#form").submit();
+
+                            }
+                        }
+                    });
+                    twoPlyBehind.forEach(function(boardState,index){
+                        // alert("O board state is " + boardState[index].last_move);
+                    });
+                    // $.ajax({url:"/previous",data: {positions:[{a:"b"},{b:"c"}]},method:"post"});
+                    $.ajax({url:"/previous", data: {positions:twoPlyBehind},method:"post",datatype:"json"});
+
+                }
+                function modifyString(originalString,index,newLetter)
+                {
+                    var newString = "";
+                    for(var i = 0; i < originalString.length; i ++)
+                    {
+                        var currentLetter = originalString[i];
+                        if (index === i)
+                        {
+                            newString += newLetter;
+                        }
+                        else
+                        {
+                            newString += currentLetter;
+                        }
+                    }
+                    return newString;
                 }
                 function checkIfThreeInARow()
                 {
@@ -315,7 +409,7 @@
                     {
                         ticTacToeMatrix[0].forEach(function(value,index){
                             checkRow(index);
-                        })
+                        });
                         function checkRow(index)
                         {
                             function testIfTrue(playerMove)

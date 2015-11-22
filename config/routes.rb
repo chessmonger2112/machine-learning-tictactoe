@@ -6,6 +6,7 @@ Rails.application.routes.draw do
   root 'welcome#index'
   get '/test/:gamehistory' => 'welcome#newtest'
   get '/displayall' => 'welcome#show_database'
+  post '/previous' => 'welcome#prev'
 
   # Example of regular route:
   #   get 'products/:id' => 'catalog#view'
