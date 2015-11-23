@@ -337,8 +337,7 @@
                             if (letter === 'O')
                             {
                                 var modFinalBState = modifyString(boardState,i,"-");
-                                // twoPlyBehind.push({move_history: modFinalBState,last_move: i});
-                                twoPlyBehind.push(modFinalBState,i + 1);
+                                twoPlyBehind.push({move_history: modFinalBState,last_move: i});
                                 previousMovesBeingAdded = true;
                             }
                         }
