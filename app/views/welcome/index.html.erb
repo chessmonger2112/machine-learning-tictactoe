@@ -7,9 +7,16 @@
         }
         .container{
             margin-top: 250px;
+
         }
         .player-container{
             margin-top: 250px;
+        }
+        .tic-tac-toe{
+            display: inline-block;
+            width: 10%;
+            height: 100px;
+            font-size: 3em;
         }
         </style>
     </head>
@@ -96,7 +103,7 @@
                     return newMatrix;
                 }
 
-                var playAgainstComputer = prompt("Play against the Computer?");
+                playAgainstComputer = prompt("Play against the Computer?");
                 if (playAgainstComputer === "yes")
                 {
                     $(".player").hide();
@@ -257,7 +264,7 @@
                     }
 
                     compareDBToLegalMoves();
-                    if (!previousMovesBeingAdded && computerLost)
+                    if (!previousMovesBeingAdded && computerLost && playAgainstComputer === "yes")
                     {
                         location.href = "http://localhost:3000/test/" + finalBoardState + currentMove;
                     }
