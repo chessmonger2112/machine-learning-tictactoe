@@ -10,8 +10,6 @@
     </head>
 
     <body>
-        <input type="text" id="get-moves">Put your text here</input>
-        <button id="make-board">Make board</button>
         <div class="container">
             <div class="first-three">
                 <span class="one tic-tac-toe" data-number="1" data-row="0" data-column="0">1</span>
@@ -75,17 +73,6 @@
             var currentMove;
             $(function() {
                 console.log("test");
-
-                $("#make-board").click(function(){
-                    var input = $("#get-moves").val();
-
-                    ticTacToeMatrix.forEach(function(col,cIndex){
-                        col.forEach(function(square,sIndex){
-                            ticTacToeMatrix[cIndex][sIndex] = input[sIndex + 3 *cIndex];
-                        });
-                    });
-                    makeBoardFromMatrix(ticTacToeMatrix);
-                });
 
                 function makeBoardFromMatrix(matrix)
                 {
