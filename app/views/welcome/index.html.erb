@@ -12,7 +12,6 @@
     <body>
         <input type="text" id="get-moves">Put your text here</input>
         <button id="make-board">Make board</button>
-        <button id="compare-positions">Get your comparison on player</button>
         <div class="container">
             <div class="first-three">
                 <span class="one tic-tac-toe" data-number="1" data-row="0" data-column="0">1</span>
@@ -88,17 +87,6 @@
                     makeBoardFromMatrix(ticTacToeMatrix);
                 });
 
-                $("#compare-positions").click(function(){
-
-                    var input = $("#get-moves").val();
-                    newMatrix = [[null,null,null],[null,null,null],[null,null,null]];
-                    newMatrix.forEach(function(col,cIndex){
-                        col.forEach(function(square,sIndex){
-                            newMatrix[cIndex][sIndex] = input[sIndex + 3 *cIndex];
-                        });
-                    });
-                    console.log(areTheseTwoPositionsEqual(ticTacToeMatrix,newMatrix));
-                });
                 function makeBoardFromMatrix(matrix)
                 {
                     newMatrix = [[],[],[]];
@@ -330,6 +318,7 @@
                     //     alert("X board state is " + boardState);
                     // });
                     twoPlyBehind = [];
+                    var mapper = [1,4,7,2,5,8,3,6,9]
                     onePlyBehind.forEach(function(boardState){
                         for (var i = 0; i < boardState.length; i ++)
                         {
@@ -337,7 +326,7 @@
                             if (letter === 'O')
                             {
                                 var modFinalBState = modifyString(boardState,i,"-");
-                                twoPlyBehind.push({move_history: modFinalBState,last_move: i});
+                                twoPlyBehind.push({move_history: modFinalBState,last_move: mapper[i]});
                                 previousMovesBeingAdded = true;
                             }
                         }
