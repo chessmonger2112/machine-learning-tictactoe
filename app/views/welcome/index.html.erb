@@ -1,6 +1,5 @@
 <html>
     <head>
-
     </head>
     <body>
         <div id="everything">
@@ -32,7 +31,6 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
         <script>
             var finalBoardState = "";
-
             var ticTacArray = [0,0,0,0,0,0,0,0,0];
             var ticTacToeMatrix = [['-','-','-'],
                            ['-','-','-'],
@@ -85,7 +83,7 @@
                     return newMatrix;
                 }
 
-                playAgainstComputer = prompt("Play against the Computer?");
+                playAgainstComputer = prompt("Play against the Computer?").toLowerCase();
                 if (playAgainstComputer === "yes")
                 {
                     $(".player").hide();
@@ -157,6 +155,7 @@
                                         if (badMoveArray.length > 0)
                                         {
                                             badMoveArray.forEach(function(badMove){
+                                                badMove = Number(badMove);
                                                 if (badMove === findCorrespondingElement(rIndex,sIndex).data("number"))
                                                 {
                                                     beenPlayedBefore = true;
@@ -182,17 +181,17 @@
                         });
                     }
                 }
-                function isInDataBase(candidateMove)
+                function isInDataBase(position) //checks how many times lost position is in database
                 {
-                    var badMoveArray = [];
-                    <%for row in 0 ..@his.length-1 %>
-                        if ("<%=@his[row].move_history%>" === candidateMove)
-                        {
-                            // console.log("The last move played is ","<%=@his[row].last_move%>")
-                            badMoveArray.push(<%=@his[row].last_move %>);
-                        }
-                    <%end%>
-                    return badMoveArray;
+                    var badObject = [];
+                    $.ajax({
+                        url:'/count1',
+                        data: {position: position},
+                        async: false,
+                        success: function(data){
+                            badObject = data;},
+                        method:"post"});
+                    return badObject.badMoveArray;
                 }
 
                 function areTheseTwoPositionsEqual(matrix1,matrix2)
@@ -248,10 +247,11 @@
                     compareDBToLegalMoves();
                     if (!previousMovesBeingAdded && computerLost && playAgainstComputer === "yes")
                     {
-                        location.href = "/test/" + finalBoardState + currentMove;
+                        var url = "/test/" + finalBoardState + currentMove;
+                        $.ajax({url: url})
                     }
                 }
-                function compareDBToLegalMoves()
+                function compareDBToLegalMoves() //checks if all legal moves are losing moves
                 {
                     var numOfSamePos = 0;
                     <% for index in 0 .. @his.length-1 %>
@@ -281,7 +281,7 @@
                     }
                     if (numOfLegalMoves -1 === numOfSamePos)
                     {
-                        alert(numOfSamePos + " positions have the same position in the database");
+                        // alert(numOfSamePos + " positions have the same position in the database");
                         createPreviousPositions();
                     }
                 }
@@ -297,11 +297,8 @@
                             onePlyBehind.push(modFinalBState);
                         }
                     }
-                    // onePlyBehind.forEach(function(boardState){
-                    //     alert("X board state is " + boardState);
-                    // });
                     twoPlyBehind = [];
-                    var mapper = [1,4,7,2,5,8,3,6,9]
+                    var mapper = [1,4,7,2,5,8,3,6,9];
                     onePlyBehind.forEach(function(boardState){
                         for (var i = 0; i < boardState.length; i ++)
                         {

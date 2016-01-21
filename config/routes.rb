@@ -8,6 +8,7 @@ Rails.application.routes.draw do
   get '/displayall' => 'welcome#show_database'
   post '/previous' => 'welcome#prev'
   delete '/lostposition/:position' => 'welcome#del'
+  post '/count1' => 'welcome#count_positions'
 
   # Example of regular route:
   #   get 'products/:id' => 'catalog#view'
